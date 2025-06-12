@@ -66,6 +66,7 @@ func LoadConfig() *models.Config {
 // getEnv gets an environment variable with a default value
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
+		log.Println("No ENV Found ", key)
 		return value
 	}
 	return defaultValue
