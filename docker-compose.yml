@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  trading-signal:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - PORT=8080
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEFAULT_STOCK_SYMBOL=${DEFAULT_STOCK_SYMBOL:-INDY.JK}
+      - SIGNAL_COOLDOWN_MINUTES=${SIGNAL_COOLDOWN_MINUTES:-15}
+      - MIN_CONFIDENCE_LEVEL=${MIN_CONFIDENCE_LEVEL:-70}
+      - NEWS_API_KEY=${NEWS_API_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - trading-network
+
+networks:
+  trading-network:
+    driver: bridge 
