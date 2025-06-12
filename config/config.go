@@ -49,6 +49,7 @@ func LoadConfig() *models.Config {
 		WebhookURL:         getEnv("WEBHOOK_URL", ""),
 	}
 
+	log.Println(config)
 	// Validate required configuration
 	if config.GeminiAPIKey == "" {
 		log.Fatal("GEMINI_API_KEY is required")
@@ -66,9 +67,9 @@ func LoadConfig() *models.Config {
 // getEnv gets an environment variable with a default value
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
-		log.Println("No ENV Found ", key)
 		return value
 	}
+	log.Printf("Environment variable %s not found, using default value: %s", key, defaultValue)
 	return defaultValue
 }
 
@@ -78,6 +79,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue
 		}
+		log.Printf("Environment variable %s has invalid integer value: %s, using default: %d", key, value, defaultValue)
 	}
 	return defaultValue
 }
