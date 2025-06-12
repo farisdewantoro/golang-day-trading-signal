@@ -69,7 +69,15 @@ A Go-based application that generates AI-powered trading signals for Indonesian 
 | `STOCK_SYMBOLS` | Comma-separated list of stock symbols for bulk analysis | `DEFAULT_STOCK_SYMBOL` |
 | `SIGNAL_COOLDOWN_MINUTES` | Minutes between signals | `15` |
 | `MIN_CONFIDENCE_LEVEL` | Minimum confidence % | `70` |
+| `CRON_SCHEDULE_TIMES` | Comma-separated list of execution times in HH:MM format (WIB timezone) | `` |
 | `NEWS_API_KEY` | News API key (optional) | `` |
+
+**Cron Schedule Configuration:**
+- Format: `HH:MM` (24-hour format)
+- Timezone: WIB (UTC+7)
+- Multiple times separated by comma
+- Example: `08:30,12:00,14:45` (executes at 8:30 AM, 12:00 PM, and 2:45 PM WIB daily)
+- If not configured, cron scheduler will be disabled
 
 ## 🚀 Running the Application
 
@@ -123,6 +131,43 @@ This endpoint analyzes all stocks configured in `STOCK_SYMBOLS` environment vari
   "data": {
     "status": "started",
     "message": "Analysis is running in background. Check Telegram for results."
+  }
+}
+```
+
+### Get Cron Scheduler Status
+```http
+GET /api/v1/cron-status
+```
+
+This endpoint returns the current status of the cron scheduler, including configured times, timezone, and next scheduled executions.
+
+**Response (when enabled):**
+```json
+{
+  "success": true,
+  "message": "Cron scheduler status retrieved successfully",
+  "data": {
+    "timezone": "Asia/Jakarta",
+    "configured_times": ["08:30", "12:00", "14:45"],
+    "active_jobs": 3,
+    "next_runs": [
+      "2024-01-16T08:30:00+07:00",
+      "2024-01-16T12:00:00+07:00",
+      "2024-01-16T14:45:00+07:00"
+    ]
+  }
+}
+```
+
+**Response (when disabled):**
+```json
+{
+  "success": true,
+  "message": "Cron scheduler is not configured",
+  "data": {
+    "enabled": false,
+    "message": "No cron schedule times configured"
   }
 }
 ```
@@ -244,7 +289,30 @@ Content-Type: application/json
 
 ## 🔄 Automated Usage
 
-### Cron Job Example
+### Built-in Cron Scheduler
+
+The application includes a built-in cron scheduler that automatically executes `tradingService.GenerateAllSignalsSummary()` at configured times. This feature:
+
+- **Timezone**: Uses WIB (UTC+7) timezone
+- **Configuration**: Set via `CRON_SCHEDULE_TIMES` environment variable
+- **Format**: HH:MM (24-hour format), comma-separated
+- **Example**: `08:30,12:00,14:45` executes daily at 8:30 AM, 12:00 PM, and 2:45 PM WIB
+- **Execution**: Automatically calls the bulk signal analysis and sends summary to Telegram
+- **Monitoring**: Use `/api/v1/cron-status` endpoint to check scheduler status
+
+**Example Configuration:**
+```bash
+# .env file
+CRON_SCHEDULE_TIMES=08:30,12:00,14:45
+```
+
+**Log Output:**
+```
+🕐 [CRON] Executing scheduled trading signal generation at 2024-01-15 08:30:00 WIB
+✅ [CRON] Scheduled trading signal generation completed at 2024-01-15 08:45:23 WIB
+```
+
+### External Cron Job Example
 ```bash
 # Run every 15 minutes during market hours
 */15 9-15 * * 1-5 curl -X GET "http://localhost:8080/api/v1/signal?symbol=INDY.JK"

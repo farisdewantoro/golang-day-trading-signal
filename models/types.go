@@ -80,6 +80,7 @@ type Config struct {
 	MinConfidenceLevel int
 	StockSymbols       []string // List of stock symbols to analyze
 	WebhookURL         string   // Telegram webhook URL
+	CronScheduleTimes  []string // List of cron schedule times in HH:MM format
 }
 
 // SignalSummary represents a summary of all analyzed signals

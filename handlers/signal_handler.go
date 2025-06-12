@@ -13,6 +13,7 @@ import (
 // SignalHandler handles HTTP requests for trading signals
 type SignalHandler struct {
 	tradingService *services.TradingSignalService
+	cronScheduler  *services.CronScheduler
 }
 
 // NewSignalHandler creates a new signal handler
@@ -20,6 +21,11 @@ func NewSignalHandler(tradingService *services.TradingSignalService) *SignalHand
 	return &SignalHandler{
 		tradingService: tradingService,
 	}
+}
+
+// SetCronScheduler sets the cron scheduler for the handler
+func (h *SignalHandler) SetCronScheduler(cronScheduler *services.CronScheduler) {
+	h.cronScheduler = cronScheduler
 }
 
 // GenerateSignal handles POST requests to generate trading signals
@@ -297,5 +303,28 @@ func (h *SignalHandler) DeleteWebhook(c *gin.Context) {
 	c.JSON(http.StatusOK, models.APIResponse{
 		Success: true,
 		Message: "Webhook deleted successfully",
+	})
+}
+
+// GetCronStatus handles GET requests to get cron scheduler status
+func (h *SignalHandler) GetCronStatus(c *gin.Context) {
+	if h.cronScheduler == nil {
+		c.JSON(http.StatusOK, models.APIResponse{
+			Success: true,
+			Message: "Cron scheduler is not configured",
+			Data: map[string]interface{}{
+				"enabled": false,
+				"message": "No cron schedule times configured",
+			},
+		})
+		return
+	}
+
+	scheduleInfo := h.cronScheduler.GetScheduleInfo()
+
+	c.JSON(http.StatusOK, models.APIResponse{
+		Success: true,
+		Message: "Cron scheduler status retrieved successfully",
+		Data:    scheduleInfo,
 	})
 }

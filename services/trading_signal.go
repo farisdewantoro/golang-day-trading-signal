@@ -193,12 +193,6 @@ func (t *TradingSignalService) GenerateAllSignalsSummary() {
 		for i, symbol := range t.config.StockSymbols {
 			log.Printf("Analyzing stock %d/%d: %s", i+1, len(t.config.StockSymbols), symbol)
 
-			// Check if we can generate signal for this symbol
-			if !t.canGenerateSignal(symbol) {
-				log.Printf("Skipping %s due to cooldown period", symbol)
-				continue
-			}
-
 			// Fetch OHLC data
 			ohlcData, err := t.yahooService.FetchOHLCData(symbol)
 			if err != nil {
@@ -220,9 +214,6 @@ func (t *TradingSignalService) GenerateAllSignalsSummary() {
 				failedSignals = append(failedSignals, symbol)
 				continue
 			}
-
-			// Update signal cache
-			t.updateSignalCache(symbol)
 
 			// Categorize signal
 			switch strings.ToUpper(signal.Signal) {

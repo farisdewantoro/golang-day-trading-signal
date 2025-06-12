@@ -36,6 +36,19 @@ func LoadConfig() *models.Config {
 		stockSymbols = []string{defaultSymbol}
 	}
 
+	// Get cron schedule times from environment
+	cronScheduleStr := getEnv("CRON_SCHEDULE_TIMES", "")
+	var cronScheduleTimes []string
+	if cronScheduleStr != "" {
+		// Split comma-separated schedule times
+		for _, timeStr := range strings.Split(cronScheduleStr, ",") {
+			timeStr = strings.TrimSpace(timeStr)
+			if timeStr != "" {
+				cronScheduleTimes = append(cronScheduleTimes, timeStr)
+			}
+		}
+	}
+
 	config := &models.Config{
 		GeminiAPIKey:       getEnv("GEMINI_API_KEY", ""),
 		TelegramBotToken:   getEnv("TELEGRAM_BOT_TOKEN", ""),
@@ -43,10 +56,11 @@ func LoadConfig() *models.Config {
 		Port:               getEnv("PORT", "8080"),
 		Environment:        getEnv("ENVIRONMENT", "development"),
 		DefaultStockSymbol: getEnv("DEFAULT_STOCK_SYMBOL", "INDY.JK"),
-		SignalCooldownMins: getEnvAsInt("SIGNAL_COOLDOWN_MINUTES", 15),
+		SignalCooldownMins: getEnvAsInt("SIGNAL_COOLDOWN_MINUTES", 5),
 		MinConfidenceLevel: getEnvAsInt("MIN_CONFIDENCE_LEVEL", 70),
 		StockSymbols:       stockSymbols,
 		WebhookURL:         getEnv("WEBHOOK_URL", ""),
+		CronScheduleTimes:  cronScheduleTimes,
 	}
 
 	log.Println(config)

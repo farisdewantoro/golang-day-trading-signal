@@ -27,6 +27,23 @@ func main() {
 	}
 	defer tradingService.Close()
 
+	// Create and start cron scheduler if schedule times are configured
+	var cronScheduler *services.CronScheduler
+	if len(cfg.CronScheduleTimes) > 0 {
+		cronScheduler, err = services.NewCronScheduler(tradingService, cfg.CronScheduleTimes)
+		if err != nil {
+			log.Printf("Failed to create cron scheduler: %v", err)
+		} else {
+			if err := cronScheduler.Start(); err != nil {
+				log.Printf("Failed to start cron scheduler: %v", err)
+			} else {
+				log.Printf("Cron scheduler started with %d schedule times", len(cfg.CronScheduleTimes))
+			}
+		}
+	} else {
+		log.Println("No cron schedule times configured, skipping cron scheduler")
+	}
+
 	// Set Gin mode
 	if cfg.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -38,6 +55,11 @@ func main() {
 	// Create handler
 	signalHandler := handlers.NewSignalHandler(tradingService)
 
+	// Set cron scheduler to handler if available
+	if cronScheduler != nil {
+		signalHandler.SetCronScheduler(cronScheduler)
+	}
+
 	// Setup routes
 	api := router.Group("/api/v1")
 	{
@@ -46,6 +68,7 @@ func main() {
 		api.POST("/signal", signalHandler.GenerateSignal)
 		api.GET("/signal-all", signalHandler.GetSignalAll)
 		api.GET("/signal-all-summary", signalHandler.GetSignalAllSummary)
+		api.GET("/cron-status", signalHandler.GetCronStatus)
 		api.POST("/webhook/setup", signalHandler.SetupWebhook)
 		api.DELETE("/webhook", signalHandler.DeleteWebhook)
 	}
@@ -84,6 +107,12 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
+
+	// Stop cron scheduler if running
+	if cronScheduler != nil {
+		cronScheduler.Stop()
+		log.Println("Cron scheduler stopped")
+	}
 
 	// Give outstanding requests a deadline for completion
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
