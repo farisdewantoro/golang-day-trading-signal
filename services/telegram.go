@@ -330,13 +330,9 @@ func (t *TelegramService) formatSignalMessage(signal *models.TradingSignal) stri
 
 📈 <b>Confidence Level:</b> %d%%
 
-🗞️ <b>News Summary:</b>
-%s
-
 📝 <b>Signal Reason:</b>
 %s`,
 		signal.Confidence,
-		signal.NewsSummary,
 		signal.Reason)
 
 	// Add OHLCV analysis if available

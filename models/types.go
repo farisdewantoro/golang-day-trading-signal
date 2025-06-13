@@ -29,7 +29,6 @@ type TradingSignal struct {
 	TargetPrice   float64        `json:"target_price"`
 	StopLoss      float64        `json:"stop_loss"`
 	Confidence    int            `json:"confidence"` // 0-100
-	NewsSummary   string         `json:"news_summary"`
 	Reason        string         `json:"reason"`
 	StockSymbol   string         `json:"stock_symbol"`
 	GeneratedAt   time.Time      `json:"generated_at"`

@@ -83,17 +83,15 @@ func (g *GeminiAIService) buildPrompt(symbol string, ohlcData []models.OHLCData)
 
 	prompt := fmt.Sprintf(`%s
 
-Sertakan juga informasi sentimen pasar hari ini berdasarkan berita terkini terkait saham ini. Buat ringkasan singkat (short news summary) yang relevan.
-
 ### Instruksi:
-Lakukan analisa teknikal dan gabungkan dengan analisa sentimen/fundamental. Lakukan riset berita-berita terbaru terkait saham ini untuk memperkuat keputusan.
+Lakukan analisa teknikal berdasarkan data candlestick yang diberikan.
 
 **PENTING: Risk-Reward Ratio 1:2**
 - Setiap sinyal trading HARUS memiliki risk-reward ratio minimal 1:2
 - Jika sinyal = "BUY": Target Price harus minimal 2x jarak dari Buy Price ke Stop Loss
 - Jika sinyal = "SELL": Target Price harus minimal 2x jarak dari Sell Price ke Stop Loss
 - Contoh: Buy Price = 1000, Stop Loss = 950 (risk = 50), maka Target Price minimal = 1100 (reward = 100, ratio = 1:2)
-- Boleh dilonggarkan: Jika sinyal teknikal dan sentimen sangat kuat, rasio boleh sedikit di bawah 1:2
+- Boleh dilonggarkan: Jika sinyal teknikal sangat kuat, rasio boleh sedikit di bawah 1:2
 - Jika sinyal diberikan meskipun rasio < 1:2, jelaskan alasan validitas sinyal dengan jelas
 
 Berikan sinyal trading:
@@ -102,14 +100,13 @@ Berikan sinyal trading:
 - Target Jual (harus memenuhi risk-reward ratio 1:2)
 - Stop Loss
 - Confidence Level (0-100%%)
-- Ringkasan Sentimen (berdasarkan berita)
 - Gunakan analisis teknikal untuk mendeteksi:
 	- Pola candlestick seperti bullish engulfing, doji, hammer
 	- Crossover antara 5EMA dan 20EMA
 	- Level support dan resistance berdasarkan 2 jam terakhir
 	- RSI dan MACD
 	- Breakout harga dengan volume tinggi
-- Jelaskan alasan di balik sinyal tersebut (gabungan teknikal & sentimen/fundamental)
+- Jelaskan alasan di balik sinyal tersebut (berdasarkan analisa teknikal)
 
 **Tambahan: Analisa OHLCV Terkini**
 - Open: Harga pembukaan sesi 1/2
@@ -128,8 +125,7 @@ Berikan output dalam format JSON:
   "target_price": 2850,
   "stop_loss": 2725,
   "confidence": 82,
-  "news_summary": "Harga batubara global naik 2%%. Sentimen pasar terhadap sektor energi positif.",
-  "reason": "Terjadi pola bullish engulfing pada timeframe 5 menit. Sentimen positif karena harga batubara global naik 2%%. Risk-reward ratio 1:2 terpenuhi (risk: 25, reward: 100).",
+  "reason": "Terjadi pola bullish engulfing pada timeframe 5 menit. Risk-reward ratio 1:2 terpenuhi (risk: 25, reward: 100).",
   "ohlcv_analysis": {
     "open": 2740,
     "high": 2750,
